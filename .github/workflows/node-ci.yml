@@ -40,6 +40,13 @@ on:
         description: Optional test command. Skipped when empty.
         type: string
         default: ""
+    secrets:
+      npm-token:
+        description: >-
+          Optional token with read:packages, exposed to the install step as
+          NODE_AUTH_TOKEN. Required only by callers that install private
+          GitHub Packages dependencies (e.g. @bluebossa63/*).
+        required: false
 
 # Evaluated in the caller's context: github.workflow is the caller workflow
 # name and github.ref is the caller ref, so PR runs and default-branch runs land
@@ -54,6 +61,9 @@ jobs:
     name: Node CI
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      contents: read
+      packages: read
     defaults:
       run:
         working-directory: ${{ inputs.working-directory }}
@@ -70,6 +80,8 @@ jobs:
 
       - name: Install dependencies
         run: ${{ inputs.install-command }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.npm-token }}
 
       - name: Pre-check
         if: ${{ inputs.precheck-command != '' }}
