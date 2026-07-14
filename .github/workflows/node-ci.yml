@@ -69,10 +69,10 @@ jobs:
         working-directory: ${{ inputs.working-directory }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: ${{ inputs.node-version }}
           cache: npm
@@ -81,7 +81,7 @@ jobs:
       - name: Install dependencies
         run: ${{ inputs.install-command }}
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.npm-token }}
+          NODE_AUTH_TOKEN: ${{ secrets.npm-token || github.token }}
 
       - name: Pre-check
         if: ${{ inputs.precheck-command != '' }}
