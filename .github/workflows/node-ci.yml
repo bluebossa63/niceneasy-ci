@@ -1,0 +1,79 @@
+name: Node CI (reusable)
+
+# Reusable Node/TypeScript CI workflow for the nice'n'easy agent ecosystem.
+# Callers reference it as:
+#   uses: bluebossa63/niceneasy-ci/.github/workflows/node-ci.yml@main
+#
+# Steps run in a fixed order and are skipped when their command input is empty:
+#   install -> precheck -> lint -> build -> test
+# This single order covers every current caller (SDK, MCP CLI, command-center
+# app, and the VS Code extension which packages instead of running tests).
+
+on:
+  workflow_call:
+    inputs:
+      node-version:
+        description: Node.js version for actions/setup-node.
+        type: string
+        default: "22"
+      working-directory:
+        description: Directory to run all steps in (monorepo subdir support).
+        type: string
+        default: "."
+      install-command:
+        description: Dependency install command.
+        type: string
+        default: "npm ci"
+      precheck-command:
+        description: Optional pre-lint check (e.g. type-check). Skipped when empty.
+        type: string
+        default: ""
+      lint-command:
+        description: Optional lint command. Skipped when empty.
+        type: string
+        default: ""
+      build-command:
+        description: Optional build command. Skipped when empty.
+        type: string
+        default: ""
+      test-command:
+        description: Optional test command. Skipped when empty.
+        type: string
+        default: ""
+
+jobs:
+  ci:
+    name: Node CI
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache: npm
+          cache-dependency-path: ${{ inputs.working-directory }}/package-lock.json
+
+      - name: Install dependencies
+        run: ${{ inputs.install-command }}
+
+      - name: Pre-check
+        if: ${{ inputs.precheck-command != '' }}
+        run: ${{ inputs.precheck-command }}
+
+      - name: Lint
+        if: ${{ inputs.lint-command != '' }}
+        run: ${{ inputs.lint-command }}
+
+      - name: Build
+        if: ${{ inputs.build-command != '' }}
+        run: ${{ inputs.build-command }}
+
+      - name: Test
+        if: ${{ inputs.test-command != '' }}
+        run: ${{ inputs.test-command }}
