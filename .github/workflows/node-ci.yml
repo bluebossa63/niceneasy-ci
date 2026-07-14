@@ -41,10 +41,19 @@ on:
         type: string
         default: ""
 
+# Evaluated in the caller's context: github.workflow is the caller workflow
+# name and github.ref is the caller ref, so PR runs and default-branch runs land
+# in separate groups. cancel-in-progress kills superseded runs (e.g. rapid
+# pushes to the same branch) to conserve Actions minutes.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   ci:
     name: Node CI
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: ${{ inputs.working-directory }}
