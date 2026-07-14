@@ -15,7 +15,7 @@ on:
       node-version:
         description: Node.js version for actions/setup-node.
         type: string
-        default: "22"
+        default: "24"
       working-directory:
         description: Directory to run all steps in (monorepo subdir support).
         type: string
